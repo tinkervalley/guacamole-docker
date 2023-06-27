@@ -1,0 +1,39 @@
+version: '2.0'
+services:
+  guacd:
+    image: guacamole/guacd
+    restart: always
+  mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: guac139
+      MYSQL_USER: guacdb
+      MYSQL_PASSWORD: setdbpasswordhere
+      MYSQL_DATABASE: guacdb
+    image: mysql:8.0
+    restart: always
+    volumes:
+    - ./config/mysql:/var/lib/mysql
+  guacamole:
+    depends_on:
+    - guacd
+    - mysql
+    environment:
+      GUACD_HOSTNAME: guacd
+      MYSQL_HOSTNAME: mysql
+      MYSQL_USER: guacdb
+      MYSQL_PASSWORD: setdbpasswordhere
+      MYSQL_DATABASE: guacdb
+    image: guacamole/guacamole
+    links:
+    - guacd
+    - mysql
+    restart: always
+  nginx:
+   restart: always
+   image: nginx
+   volumes:
+   - ./config/nginx:/etc/nginx/conf.d:ro
+   ports:
+   - 8080:80
+   links:
+   - guacamole
